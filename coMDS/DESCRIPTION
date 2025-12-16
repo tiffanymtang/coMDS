@@ -1,0 +1,38 @@
+Package: coMDS
+Title: Consensus Multidimensional Scaling
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Tiffany", "Tang", , "ttang4@nd.edu", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-8079-6867")),
+    person("Bingxue", "An", , "ban2@nd.edu", role = "aut")
+  )
+Description: Consensus Multidimensional Scaling (CoMDS) provides a multi-view 
+    framework to summarize multiple dimension reduction visualizations (e.g., 
+    PCA, t-SNE, UMAP) into a single consensus visualization. This consensus 
+    visualization captures the common structure that is shared across different 
+    dimension reduction methods and hyperparameter settings. This package 
+    provides tools to fit CoMDS and its local variant LoCoMDS, as detailed in
+    An and Tang (2025).
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Suggests: 
+    Rtsne,
+    testthat (>= 3.0.0),
+    umap,
+    vdiffr
+Config/testthat/edition: 3
+LinkingTo: 
+    Rcpp,
+    RcppArmadillo
+Imports: 
+    dplyr,
+    FNN,
+    forcats,
+    furrr,
+    ggplot2,
+    purrr,
+    Rcpp,
+    smacof,
+    tibble,
+    tidyselect
