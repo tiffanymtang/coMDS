@@ -1,0 +1,48 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  comment = "#>",
+  fig.path = file.path("man", "figures", "README-"),
+  out.width = "100%"
+)
+```
+
+# Consensus Multidimensional Scaling
+
+![](../coMDS/man/figures/schematic.png)
+
+Different dimension reduction methods often output different and possibly conflicting visualizations of the same data. 
+This problem is further exacerbated by the choice of hyperparameters, which may substantially impact the resulting visualization.
+To obtain a more robust and trustworthy dimension reduction output, we develop a multi-view framework called [Consensus Multidimensional Scaling]() (CoMDS), which summarizes multiple dimension reduction visualizations (e.g., PCA, t-SNE, UMAP) into a single *consensus* visualization.
+This consensus visualization captures the common structure that is shared across different dimension reduction methods and hyperparameter settings. 
+Such shared structure is likely more reliable than idiosyncratic structures, which are present in only one or a small subset of methods.
+In addition to CoMDS, we provide a local variant of CoMDS, *Local Consensus Multidimensional Scaling (LoCoMDS)*, which further enhances robustness by preserving local consensus structures and decreasing the influence of outliers.
+
+## Project Structure
+
+This directory contains all of the code necessary to reproduce the analysis and figures in [An and Tang (2025)]().
+
+To ensure reproducibility, we use [`renv`](https://rstudio.github.io/renv/articles/renv.html) to create a reproducible R environment. To install the necessary dependencies and reproduce the results, follow these steps:
+
+1.  Clone this repository.
+2.  Open the `coMDS-manuscript.Rproj` in RStudio.
+3.  Restore the project dependencies by running:
+
+``` r
+# install.packages("renv") # if not already installed
+renv::restore()
+```
+
+4.  Download the datasets used in the manuscript from [Zenodo](https://zenodo.org/records/17956327) and place them in the `coMDS-manuscript/data/` directory.
+5.  Run the analysis and figure-generation scripts as needed (The main scripts are in the [scripts/](scripts/) directory and driver scripts are in the [job_scripts/](job_scripts/) directory).
+
+These steps will generate all of the figures and results from the mansucript.
+
