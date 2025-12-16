@@ -1,0 +1,9 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+.DS_Store
+
+coMDS-manuscript/data/
+coMDS-manuscript/results/
+coMDS-manuscript/job_scripts/logs/*
