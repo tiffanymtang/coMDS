@@ -28,9 +28,8 @@ This repository contains:
 
 1.  An R package `coMDS` to run consensus multidimensional scaling (see
     [coMDS/](coMDS/))
-2.  All code necessary to reproduce the analysis and figures in
-    \[An and Tang (2025)\]() (see
-    [coMDS-manuscript/](coMDS-manuscript/) )
+2.  All code necessary to reproduce the analysis and figures in \[An and
+    Tang (2025)\]() (see [coMDS-manuscript/](coMDS-manuscript/) )
 
 ## Installation of the R package
 

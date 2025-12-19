@@ -62,7 +62,7 @@ library(patchwork)
 In this example, we first applied three different dimension reduction methods (i.e., PCA, t-SNE, and UMAP) to the iris dataset.
 In many real-world datasets, these dimension reduction methods can yield very different low-dimensional embeddings.
 
-```{r}
+```{r, fig.width = 14, fig.height = 4}
 data(iris)
 # remove duplicates so that t-SNE can run
 iris <- dplyr::distinct(iris)
@@ -104,11 +104,11 @@ comds_out <- coMDS(embed_list = dr_list, ndim = 2)
 ```
 
 We can visualize the CoMDS consensus embeddings via
-```{r}
+```{r, fig.width = 14, fig.height = 8}
 plot_coMDS(comds_out, color = species)
 ```
 and examine the relative error between each input embedding and the CoMDS consensus embedding via
-```{r}
+```{r, fig.width = 14, fig.height = 8}
 plot_coMDS(comds_out, type = "relative_error")
 ```
 
@@ -128,18 +128,18 @@ locomds_single_out <- locoMDS(
 ```
 
 We can visualize the LoCoMDS consensus embeddings via
-```{r}
+```{r, fig.width = 14, fig.height = 8}
 plot_coMDS(locomds_single_out, color = species)
 ```
 
 and examine the relative error between each input embedding and the CoMDS consensus embedding via
-```{r}
+```{r, fig.width = 14, fig.height = 8}
 plot_coMDS(locomds_single_out, type = "relative_error")
 ```
 
 LoCoMDS can be run with either a single choice of hyperparameters (as above), or it can be tuned across multiple choices of hyperparameters to select the best consensus embedding.
 
-```{r}
+```{r, fig.width = 14, fig.height = 6}
 # fit LoCoMDS and tune across multiple choices of hyperparameters
 locomds_multi_out <- locoMDS(
   embed_list = dr_list, ndim = 2, tau = c(0.01, 0.1), percentile = c(0.5, 0.8)
@@ -158,14 +158,14 @@ locomds_tuned_out <- extract_locoMDS(locomds_multi_out, tau = 0.1, percentile = 
 ```
 
 To plot the tuned LoCoMDS consensus embedding and their corresponding relative errors plot, we can use
-```{r}
+```{r, fig.width = 14, fig.height = 6}
 p1 <- plot_coMDS(locomds_tuned_out, color = species)
 p2 <- plot_coMDS(locomds_tuned_out, type = "relative_error")
 patchwork::wrap_plots(p1, p2, nrow = 1)
 ```
 
 We can alternatively examine the consensus embeddings and relative errors for all combinations of hyperparameters via
-```{r}
+```{r, fig.width = 14, fig.height = 6}
 p1 <- plot_coMDS(locomds_multi_out, color = species)
 p2 <- plot_coMDS(locomds_multi_out, type = "relative_error")
 patchwork::wrap_plots(p1, p2, nrow = 1)
