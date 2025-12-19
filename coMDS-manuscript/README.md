@@ -10,22 +10,27 @@ possibly conflicting visualizations of the same data. This problem is
 further exacerbated by the choice of hyperparameters, which may
 substantially impact the resulting visualization. To obtain a more
 robust and trustworthy dimension reduction output, we develop a
-multi-view framework called [Consensus Multidimensional Scaling]()
-(CoMDS), which summarizes multiple dimension reduction visualizations
-(e.g., PCA, t-SNE, UMAP) into a single *consensus* visualization. This
-consensus visualization captures the common structure that is shared
-across different dimension reduction methods and hyperparameter
-settings. Such shared structure is likely more reliable than
-idiosyncratic structures, which are present in only one or a small
-subset of methods. In addition to CoMDS, we provide a local variant of
-CoMDS, *Local Consensus Multidimensional Scaling (LoCoMDS)*, which
-further enhances robustness by preserving local consensus structures and
-decreasing the influence of outliers.
+multi-view framework called [Consensus Multidimensional
+Scaling](https://arxiv.org/abs/2512.15802) (CoMDS), which summarizes
+multiple dimension reduction visualizations (e.g., PCA, t-SNE, UMAP)
+into a single *consensus* visualization. This consensus visualization
+captures the common structure that is shared across different dimension
+reduction methods and hyperparameter settings. Such shared structure is
+likely more reliable than idiosyncratic structures, which are present in
+only one or a small subset of methods. In addition to CoMDS, we provide
+a local variant of CoMDS, *Local Consensus Multidimensional Scaling
+(LoCoMDS)*, which further enhances robustness by preserving local
+consensus structures and decreasing the influence of outliers.
+
+For more details, check out [An, B., Tang, T. M. “Consensus dimension
+reduction via multi-view learning.”
+(2025).](https://arxiv.org/abs/2512.15802)
 
 ## Project Structure
 
 This directory contains all of the code necessary to reproduce the
-analysis and figures in [An and Tang (2025)]().
+analysis and figures in [An and Tang
+(2025)](https://arxiv.org/abs/2512.15802).
 
 To ensure reproducibility, we use
 [`renv`](https://rstudio.github.io/renv/articles/renv.html) to create a
@@ -50,3 +55,15 @@ renv::restore()
 
 These steps will generate all of the figures and results from the
 mansucript.
+
+## Citation
+
+    @article{an2025consensus,
+          title={Consensus dimension reduction via multi-view learning}, 
+          author={Bingxue An and Tiffany M. Tang},
+          year={2025},
+          eprint={2512.15802},
+          archivePrefix={arXiv},
+          primaryClass={stat.ME},
+          url={https://arxiv.org/abs/2512.15802}, 
+    }
