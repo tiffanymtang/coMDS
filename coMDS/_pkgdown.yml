@@ -1,0 +1,25 @@
+url: https://tiffanymtang.github.io/coMDS
+template:
+  bootstrap: 5
+development:
+  mode: auto
+reference:
+  - title: "Consensus Multidimensional Scaling (CoMDS)"
+    contents:
+      - coMDS
+      - plot_coMDS
+  - title: "Local Consensus Multidimensional Scaling (LoCoMDS)"
+    contents:
+      - locoMDS
+      - tune_locoMDS
+      - extract_locoMDS
+      - lcmc
+      - plot_coMDS
+  - title: "Developer Functions"
+    desc: >
+      Helper functions for developers to build off of CoMDS/LoCoMDS; generally
+      not intended for applied practitioners or end users.
+    contents:
+      - smacofIndDiff
+      - localSmacofIndDiff
+      - normalize_distances
