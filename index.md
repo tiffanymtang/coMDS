@@ -28,6 +28,7 @@ reduction via multi-view learning.”
 You can install the `coMDS` R package from GitHub via:
 
 ``` r
+
 # install.packages("devtools")
 devtools::install_github("tiffanymtang/coMDS", subdir = "coMDS")
 ```
@@ -39,6 +40,7 @@ dataset, a classic benchmark dataset containing measurements of 150 iris
 flowers across three species.
 
 ``` r
+
 # load in packages
 library(coMDS)
 library(dplyr)
@@ -59,6 +61,7 @@ real-world datasets, these dimension reduction methods can yield very
 different low-dimensional embeddings.
 
 ``` r
+
 data(iris)
 # remove duplicates so that t-SNE can run
 iris <- dplyr::distinct(iris)
@@ -101,6 +104,7 @@ robust and trustworthy low-dimensional embedding than a single method
 alone.
 
 ``` r
+
 # fit coMDS
 comds_out <- coMDS(embed_list = dr_list, ndim = 2)
 ```
@@ -108,6 +112,7 @@ comds_out <- coMDS(embed_list = dr_list, ndim = 2)
 We can visualize the CoMDS consensus embeddings via
 
 ``` r
+
 plot_coMDS(comds_out, color = species)
 ```
 
@@ -116,6 +121,7 @@ relative error between each input embedding and the CoMDS consensus
 embedding via
 
 ``` r
+
 plot_coMDS(comds_out, type = "relative_error")
 ```
 
@@ -137,6 +143,7 @@ the degree of locality, and `percentile`, which controls the threshold
 for defining local neighborhoods.
 
 ``` r
+
 # fit LoCoMDS with single choice of hyperparameters
 locomds_single_out <- locoMDS(
   embed_list = dr_list, ndim = 2, tau = 0.01, percentile = 0.5
@@ -146,6 +153,7 @@ locomds_single_out <- locoMDS(
 We can visualize the LoCoMDS consensus embeddings via
 
 ``` r
+
 plot_coMDS(locomds_single_out, color = species)
 ```
 
@@ -155,6 +163,7 @@ and examine the relative error between each input embedding and the
 CoMDS consensus embedding via
 
 ``` r
+
 plot_coMDS(locomds_single_out, type = "relative_error")
 ```
 
@@ -165,6 +174,7 @@ above), or it can be tuned across multiple choices of hyperparameters to
 select the best consensus embedding.
 
 ``` r
+
 # fit LoCoMDS and tune across multiple choices of hyperparameters
 locomds_multi_out <- locoMDS(
   embed_list = dr_list, ndim = 2, tau = c(0.01, 0.1), percentile = c(0.5, 0.8)
@@ -187,6 +197,7 @@ a particular choice of `tau` and `percentile`, we can extract the
 LoCoMDS consensus embedding with these hyperparameters via
 
 ``` r
+
 locomds_tuned_out <- extract_locoMDS(locomds_multi_out, tau = 0.1, percentile = 0.8)
 ```
 
@@ -194,6 +205,7 @@ To plot the tuned LoCoMDS consensus embedding and their corresponding
 relative errors plot, we can use
 
 ``` r
+
 p1 <- plot_coMDS(locomds_tuned_out, color = species)
 p2 <- plot_coMDS(locomds_tuned_out, type = "relative_error")
 patchwork::wrap_plots(p1, p2, nrow = 1)
@@ -205,6 +217,7 @@ We can alternatively examine the consensus embeddings and relative
 errors for all combinations of hyperparameters via
 
 ``` r
+
 p1 <- plot_coMDS(locomds_multi_out, color = species)
 p2 <- plot_coMDS(locomds_multi_out, type = "relative_error")
 patchwork::wrap_plots(p1, p2, nrow = 1)

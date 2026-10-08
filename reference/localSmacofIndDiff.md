@@ -58,9 +58,10 @@ localSmacofIndDiff(
 - weights:
 
   Vector of length equal to the number of distance matrices. If
-  provided, weights for each distance matrix are multiplied by the
-  corresponding value in `weights`. Default is `NULL` which will give
-  each distance matrix the same weight (i.e., scaled by 1).
+  provided, the complete loss contribution for each distance matrix,
+  including its local-neighborhood penalty, is multiplied by the
+  corresponding value in `weights`. Default is `NULL`, which gives each
+  distance matrix the same weight (i.e., scaled by 1).
 
 - weightlam:
 

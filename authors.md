@@ -9,12 +9,12 @@
 
 ## Citation
 
-Tang T, An B (2025). *coMDS: Consensus Multidimensional Scaling*. R
+Tang T, An B (2026). *coMDS: Consensus Multidimensional Scaling*. R
 package version 0.0.0.9000.
 
     @Manual{,
       title = {coMDS: Consensus Multidimensional Scaling},
       author = {Tiffany Tang and Bingxue An},
-      year = {2025},
+      year = {2026},
       note = {R package version 0.0.0.9000},
     }

@@ -119,14 +119,12 @@ dr_list <- list(
 locomds_out <- locoMDS(
   embed_list = dr_list, ndim = 2, tau = 0.1, percentile = 0.5
 )
-#> Warning: Iteration limit reached! Increase itmax argument!
 
 # fit LoCoMDS using distance matrices as input
 dist_list <- purrr::map(dr_list, ~ dist(.x, method = "euclidean"))
 locomds_out <- locoMDS(
   D_list = dist_list, ndim = 2, tau = 0.1, percentile = 0.5
 )
-#> Warning: Iteration limit reached! Increase itmax argument!
 
 # can re-run with larger number of iterations or smaller tolerance if desired
 locomds_out <- locoMDS(
@@ -138,6 +136,4 @@ locomds_out <- locoMDS(
 locomds_out <- locoMDS(
   D_list = dist_list, ndim = 2, tau = c(0.01, 0.1), percentile = c(0.5, 0.8)
 )
-#> Warning: Iteration limit reached! Increase itmax argument!
-#> Warning: Iteration limit reached! Increase itmax argument!
 ```
