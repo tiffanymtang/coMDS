@@ -4,7 +4,7 @@
 \alias{initConf}
 \title{Copy of \code{smacof:::initConf} since not exported from \code{smacof}}
 \usage{
-initConf(init, diss, n, p, inddiff = FALSE)
+initConf(init, diss, n, p, inddiff = FALSE, source_weights = NULL)
 }
 \description{
 Copy of \code{smacof:::initConf} since not exported from \code{smacof}

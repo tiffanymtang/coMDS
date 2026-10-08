@@ -38,9 +38,10 @@ percentiles result in larger neighborhoods.}
 \item{constraint}{Either \code{"indscal"}, \code{"idioscal"}, or \code{"identity"} (see details)}
 
 \item{weights}{Vector of length equal to the number of distance matrices.
-If provided, weights for each distance matrix are multiplied by the
-corresponding value in \code{weights}. Default is \code{NULL} which will give
-each distance matrix the same weight (i.e., scaled by 1).}
+If provided, the complete loss contribution for each distance matrix,
+including its local-neighborhood penalty, is multiplied by the
+corresponding value in \code{weights}. Default is \code{NULL}, which gives each
+distance matrix the same weight (i.e., scaled by 1).}
 
 \item{weightlam}{Regularization parameter for weight matrices to avoid
 singularity matrices. Default is 0 (i.e., no regularization). If

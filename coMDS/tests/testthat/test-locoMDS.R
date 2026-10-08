@@ -77,3 +77,62 @@ test_that("locoMDS works", {
   # expect_snapshot(tuned_out$lcmc)
   expect_s3_class(tuned_out$plot, "gg")
 })
+
+test_that("locoMDS source weights are invariant to a common scale", {
+  set.seed(123)
+  X <- matrix(rnorm(30), nrow = 10)
+  D_list <- list(
+    all_dimensions = dist(X),
+    selected_dimensions = dist(X[, c(1, 3)]),
+    squared_values = dist(X^2)
+  )
+  init <- cmdscale(D_list[[1]], k = 2)
+  weights <- c(1, 0.5, 0.5)
+
+  fit <- locoMDS(
+    D_list, tau = 0.1, percentile = 0.5, ndim = 2,
+    constraint = "identity", weights = weights, init = init,
+    eps = 1e-6, itmax = 1000
+  )
+  scaled_fit <- locoMDS(
+    D_list, tau = 0.1, percentile = 0.5, ndim = 2,
+    constraint = "identity", weights = 10 * weights, init = init,
+    eps = 1e-6, itmax = 1000
+  )
+
+  expect_equal(scaled_fit$stress, fit$stress, tolerance = 1e-6)
+  expect_equal(scaled_fit$niter, fit$niter)
+  expect_equal(scaled_fit$gspace, fit$gspace, tolerance = 1e-4)
+})
+
+test_that("locoMDS half-weight duplicates equal one full-weight source", {
+  set.seed(321)
+  X <- matrix(rnorm(30), nrow = 10)
+  A <- dist(X)
+  B <- dist(cbind(X[, 1] + X[, 2], X[, 3]^2))
+
+  fit <- locoMDS(
+    list(A = A, B = B), tau = 0.1, percentile = 0.5,
+    weights = c(1, 1), eps = 1e-8, itmax = 1000
+  )
+  duplicate_fit <- locoMDS(
+    list(A = A, B1 = B, B2 = B), tau = 0.1, percentile = 0.5,
+    weights = c(1, 0.5, 0.5), eps = 1e-8, itmax = 1000
+  )
+
+  expect_equal(
+    as.vector(dist(duplicate_fit$gspace)),
+    as.vector(dist(fit$gspace)), tolerance = 1e-4
+  )
+  expect_equal(duplicate_fit$stress, fit$stress, tolerance = 1e-6)
+  expect_equal(duplicate_fit$rss, fit$rss, tolerance = 1e-4)
+  expect_equal(duplicate_fit$spp, fit$spp, tolerance = 1e-4)
+  expect_equal(
+    unname(c(duplicate_fit$sps[1], sum(duplicate_fit$sps[2:3]))),
+    unname(fit$sps), tolerance = 1e-4
+  )
+  expect_equal(
+    unname(c(duplicate_fit$sps_norm[1], sum(duplicate_fit$sps_norm[2:3]))),
+    unname(fit$sps_norm), tolerance = 1e-4
+  )
+})

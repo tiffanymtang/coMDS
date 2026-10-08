@@ -73,8 +73,15 @@ initWeights <- function(diss) {
 
 #' Copy of `smacof:::initConf` since not exported from `smacof`
 #' @keywords internal
-initConf <- function(init, diss, n, p, inddiff = FALSE) {
-  if (inddiff) diss <- as.dist(apply(simplify2array(lapply(diss, as.matrix)), c(1, 2), sum, na.rm = TRUE))
+initConf <- function(init, diss, n, p, inddiff = FALSE,
+                     source_weights = NULL) {
+  if (inddiff) {
+    diss_array <- simplify2array(lapply(diss, as.matrix))
+    if (!is.null(source_weights)) {
+      diss_array <- sweep(diss_array, 3, source_weights, "*")
+    }
+    diss <- as.dist(apply(diss_array, c(1, 2), sum, na.rm = TRUE))
+  }
 
   if (length(init) == 1) {
     if (init == "torgerson") {

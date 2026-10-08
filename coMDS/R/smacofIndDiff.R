@@ -85,6 +85,8 @@ smacofIndDiff <- function(delta, ndim = 2, type = c("ratio", "interval", "ordina
 
   nn <- n * (n - 1) / 2
   m <- length(diss) ## number of diss matrices
+  source_weights <- if (is.null(weights)) rep(1, m) else weights
+  source_weight_sum <- sum(source_weights)
   itel <- 1
 
   if (is.null(attr(diss[[1]], "Labels"))) {
@@ -105,7 +107,10 @@ smacofIndDiff <- function(delta, ndim = 2, type = c("ratio", "interval", "ordina
   sold <- sf1 <- sf2 <- 0 # stress init
 
   ## --- starting values
-  aconf <- initConf(init, diss, n, p, inddiff = TRUE)
+  aconf <- initConf(
+    init, diss, n, p, inddiff = TRUE,
+    source_weights = if (is.null(weights)) NULL else source_weights
+  )
 
 
   bconf <- repList(diag(p), m) # 1-matrix
@@ -216,12 +221,12 @@ smacofIndDiff <- function(delta, ndim = 2, type = c("ratio", "interval", "ordina
     if (verbose) {
       cat(
         "Iteration: ", formatC(itel, width = 3, format = "d"),
-        " (Normalized) Stress: ", formatC(c(snon / (m * nn)), digits = 8, width = 12, format = "f"),
+        " (Normalized) Stress: ", formatC(c(snon / (source_weight_sum * nn)), digits = 8, width = 12, format = "f"),
         "\n"
       )
     }
 
-    if (((sold - snon) < (eps*m*nn)) || (itel == itmax)) break() # convergence
+    if (((sold - snon) < (eps * source_weight_sum * nn)) || (itel == itmax)) break() # convergence
 
     xr <- yr
     dr <- er
@@ -247,7 +252,7 @@ smacofIndDiff <- function(delta, ndim = 2, type = c("ratio", "interval", "ordina
   rownames(aconf) <- rnames
   names(bconf) <- names(dh)
 
-  snon <- (snon / m) / nn # stress normalization  nn <- n*(n-1)/2, m number lists
+  snon <- (snon / source_weight_sum) / nn
   stress <- sqrt(snon)
 
   confdiss <- rep(list(NULL), m)
@@ -267,7 +272,11 @@ smacofIndDiff <- function(delta, ndim = 2, type = c("ratio", "interval", "ordina
   }
   colnames(spps) <- rnames
   rownames(spps) <- names(delta)
-  spp <- colMeans(spps) ## SPP
+  spp <- if (is.null(weights)) {
+    colMeans(spps)
+  } else {
+    colSums(spps * source_weights) / source_weight_sum
+  }
   rss <- sum(rss) ## total RSS (raw stress)
 
   ## stress per subject (unnormalized and normalized by weight)
@@ -275,7 +284,7 @@ smacofIndDiff <- function(delta, ndim = 2, type = c("ratio", "interval", "ordina
   sps_norm <- NULL
   for (j in 1:m) {
     sps[j] <- sum(wgths[[j]] * (dh[[j]] - er[[j]])^2)
-    sps_norm[j] <- sps[j] / sum(wgths[[j]])
+    sps_norm[j] <- sps[j] / sum(wgths_unscaled[[j]])
   }
   sps <- sps / sum(sps) * 100
   sps_norm <- sps_norm / sum(sps_norm) * 100
@@ -316,9 +325,10 @@ smacofIndDiff <- function(delta, ndim = 2, type = c("ratio", "interval", "ordina
 #'
 #' @inheritParams smacof::smacofIndDiff
 #' @param weights Vector of length equal to the number of distance matrices.
-#'   If provided, weights for each distance matrix are multiplied by the
-#'   corresponding value in `weights`. Default is `NULL` which will give
-#'   each distance matrix the same weight (i.e., scaled by 1).
+#'   If provided, the complete loss contribution for each distance matrix,
+#'   including its local-neighborhood penalty, is multiplied by the
+#'   corresponding value in `weights`. Default is `NULL`, which gives each
+#'   distance matrix the same weight (i.e., scaled by 1).
 #' @param weightlam Regularization parameter for weight matrices to avoid
 #'   singularity matrices. Default is 0 (i.e., no regularization). If
 #'   regularization is needed, set to a small value (e.g., 1e-6).
@@ -375,17 +385,10 @@ localSmacofIndDiff <- function(delta, tau, percentile, ndim = 2,
     mm[is.na(mm)] <- 0
     return(mm)
   })
-  unif_wgths <- lapply(wgths, function(mm) {
-    mm[!is.na(mm)] <- 1
-    mm[is.na(mm)] <- 0
-    return(mm)
-  })
-
   ## --- scale weights by multiplier
-  # wgths_unscaled <- wgths
-  if (!is.null(weights)) {
-    wgths <- purrr::map2(wgths, weights, ~ .x * .y)
-  }
+  wgths_unscaled <- wgths
+  source_weights <- if (is.null(weights)) rep(1, length(diss)) else weights
+  wgths <- purrr::map2(wgths, source_weights, ~ .x * .y)
 
   ## --- Prepare for optimal scaling
   trans <- type
@@ -412,6 +415,7 @@ localSmacofIndDiff <- function(delta, tau, percentile, ndim = 2,
 
   nn <- n * (n - 1) / 2
   m <- length(diss) ## number of diss matrices
+  source_weight_sum <- sum(source_weights)
   itel <- 1
 
   if (is.null(attr(diss[[1]], "Labels"))) {
@@ -426,14 +430,16 @@ localSmacofIndDiff <- function(delta, tau, percentile, ndim = 2,
   for (j in 1:m) { # initialize weights, V, norm d as lists
     wr <- appendList(wr, vmat(wgths[[j]], weightlam))
     vr <- appendList(vr, myGenInv(wr[[j]]))
-    dh <- appendList(dh, normDissN(diss[[j]], wgths[[j]], 1))
-    # dh <- appendList(dh, normDissN(diss[[j]], unif_wgths[[j]], 1))
+    dh <- appendList(dh, normDissN(diss[[j]], wgths_unscaled[[j]], 1))
   }
   xr <- list() # configurations as list
   sold <- sf1 <- sf2 <- 0 # stress init
 
   ## --- starting values
-  aconf <- initConf(init, diss, n, p, inddiff = TRUE)
+  aconf <- initConf(
+    init, diss, n, p, inddiff = TRUE,
+    source_weights = if (is.null(weights)) NULL else source_weights
+  )
 
 
   bconf <- repList(diag(p), m) # 1-matrix
@@ -450,7 +456,7 @@ localSmacofIndDiff <- function(delta, tau, percentile, ndim = 2,
     # aconf <- lb*aconf
     xr[[j]] <- lb * xr[[j]]
     dr[[j]] <- lb * dr[[j]]
-    sold <- sold + sum(wgths[[j]] * (dh[[j]] - dr[[j]])^2, na.rm = TRUE) - tvals[j] * sum((ones_matrix - wgths[[j]]) * (dr[[j]]), na.rm = TRUE)
+    sold <- sold + sum(wgths[[j]] * (dh[[j]] - dr[[j]])^2, na.rm = TRUE) - source_weights[j] * tvals[j] * sum((ones_matrix - wgths_unscaled[[j]]) * dr[[j]], na.rm = TRUE)
   }
 
 
@@ -461,10 +467,10 @@ localSmacofIndDiff <- function(delta, tau, percentile, ndim = 2,
     er <- list()
     sunc <- 0
     for (j in 1:m) { # compute B, Y,
-      br <- appendList(br, loco_bmat(dh[[j]], wgths[[j]], dr[[j]], tvals[j], ones_matrix))
+      br <- appendList(br, source_weights[j] * loco_bmat(dh[[j]], wgths_unscaled[[j]], dr[[j]], tvals[j], ones_matrix))
       yr <- appendList(yr, vr[[j]] %*% (br[[j]] %*% xr[[j]]))
       er <- appendList(er, dist(yr[[j]]))
-      sunc <- sunc + sum(wgths[[j]] * (dh[[j]] - er[[j]])^2, na.rm = TRUE) - tvals[j] * sum((ones_matrix - wgths[[j]]) * er[[j]], na.rm = TRUE)
+      sunc <- sunc + sum(wgths[[j]] * (dh[[j]] - er[[j]])^2, na.rm = TRUE) - source_weights[j] * tvals[j] * sum((ones_matrix - wgths_unscaled[[j]]) * er[[j]], na.rm = TRUE)
     }
     scon <- sunc
 
@@ -522,7 +528,7 @@ localSmacofIndDiff <- function(delta, tau, percentile, ndim = 2,
 
       for (j in 1:m) {
         er <- appendList(er, dist(yr[[j]]))
-        scon <- scon + sum(wgths[[j]] * (dh[[j]] - er[[j]])^2, na.rm = TRUE) - tvals[j] * sum((ones_matrix - wgths[[j]]) * er[[j]], na.rm = TRUE) # constraint stress computation
+        scon <- scon + sum(wgths[[j]] * (dh[[j]] - er[[j]])^2, na.rm = TRUE) - source_weights[j] * tvals[j] * sum((ones_matrix - wgths_unscaled[[j]]) * er[[j]], na.rm = TRUE) # constraint stress computation
       }
     }
     #-------- end constraints -----------
@@ -532,22 +538,21 @@ localSmacofIndDiff <- function(delta, tau, percentile, ndim = 2,
     snon <- 0
     dh <- list()
     for (j in 1:m) {
-      do <- smacof::transform(er[[j]], disobj[[j]], w = wgths[[j]], normq = nn)$res
-      # do <- smacof::transform(er[[j]], disobj[[j]], w = unif_wgths[[j]], normq = nn)$res
+      do <- smacof::transform(er[[j]], disobj[[j]], w = wgths_unscaled[[j]], normq = nn)$res
       dh <- appendList(dh, do)
-      snon <- snon + sum(wgths[[j]] * (dh[[j]] - er[[j]])^2) - tvals[j] * sum((ones_matrix - wgths[[j]]) * er[[j]], na.rm = TRUE)
+      snon <- snon + sum(wgths[[j]] * (dh[[j]] - er[[j]])^2) - source_weights[j] * tvals[j] * sum((ones_matrix - wgths_unscaled[[j]]) * er[[j]], na.rm = TRUE)
     }
 
 
     if (verbose) {
       cat(
         "Iteration: ", formatC(itel, width = 3, format = "d"),
-        " (Normalized) Stress: ", formatC(c(snon / (m * nn)), digits = 8, width = 12, format = "f"),
+        " (Normalized) Stress: ", formatC(c(snon / (source_weight_sum * nn)), digits = 8, width = 12, format = "f"),
         "\n"
       )
     }
 
-    if ((abs(sold - snon) < (eps*m*nn)) || (itel == itmax)) break() # convergence
+    if ((abs(sold - snon) < (eps * source_weight_sum * nn)) || (itel == itmax)) break() # convergence
 
     xr <- yr
     dr <- er
@@ -573,13 +578,12 @@ localSmacofIndDiff <- function(delta, tau, percentile, ndim = 2,
   rownames(aconf) <- rnames
   names(bconf) <- names(dh)
 
-  snon <- (snon / m) / nn # stress normalization  nn <- n*(n-1)/2, m number lists
+  snon <- (snon / source_weight_sum) / nn
   stress <- sqrt(abs(snon))
 
   confdiss <- rep(list(NULL), m)
   for (j in 1:m) { # initialize weights, V, norm d as lists
-    confdiss[[j]] <- normDissN(er[[j]], wgths[[j]], 1)
-    # confdiss[[j]] <- normDissN(er[[j]], unif_wgths[[j]], 1)
+    confdiss[[j]] <- normDissN(er[[j]], wgths_unscaled[[j]], 1)
   }
 
   ## stress-per-point
@@ -587,33 +591,25 @@ localSmacofIndDiff <- function(delta, tau, percentile, ndim = 2,
   spps <- matrix(0, m, n)
   rss <- NULL
   for (j in 1:m) {
-    # if (is.null(weights)) {
-    #   wgth_scale <- 1
-    # } else {
-    #   wgth_scale <- weights[j]
-    # }
     spointj <- spp(dh[[j]], confdiss[[j]], wgths[[j]])
-    # spointj <- spp(dh[[j]], confdiss[[j]], wgth_scale * unif_wgths[[j]])
     spps[j, ] <- spointj$spp ## SPP per subject
     rss[j] <- sum(spointj$resmat[lower.tri(spointj$resmat)]) ## RSS per subject
   }
   colnames(spps) <- rnames
   rownames(spps) <- names(delta)
-  spp <- colMeans(spps) ## SPP
+  spp <- if (is.null(weights)) {
+    colMeans(spps)
+  } else {
+    colSums(spps * source_weights) / source_weight_sum
+  }
   rss <- sum(rss) ## total RSS (raw stress)
 
   ## stress per subject
   sps <- NULL
   sps_norm <- NULL
   for (j in 1:m) {
-    # if (is.null(weights)) {
-    #   wgth_scale <- 1
-    # } else {
-    #   wgth_scale <- weights[j]
-    # }
     sps[j] <- sum(wgths[[j]] * (dh[[j]] - er[[j]])^2)
-    # sps[j] <- wgth_scale * sum(unif_wgths[[j]] * (dh[[j]] - er[[j]])^2) / sum(unif_wgths[[j]])
-    sps_norm[j] <- sps[j] / sum(wgths[[j]])
+    sps_norm[j] <- sps[j] / sum(wgths_unscaled[[j]])
   }
   sps <- sps / sum(sps) * 100
   sps_norm <- sps_norm / sum(sps_norm) * 100
